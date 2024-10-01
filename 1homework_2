@@ -1,0 +1,19 @@
+library(tidyverse)
+library(stringr)
+library(dplyr)
+library(ggrepel)
+
+data1 <- read_csv("https://raw.githubusercontent.com/vydra-v-getrax/intro_to_r/main/assignment1/mad_questionary.csv")
+
+data1 <- data1 %>%
+  mutate(sex = str_replace(sex, regex('(М|м|Мужской)$'), 'мужской'))
+
+data1 <- data1 %>%
+  mutate(sex = str_replace(sex, regex('(Ж|ж|Женский|жен|Женщина)$'), 'женский'))
+
+data1$age <- as.numeric(data1$age)
+
+data1 %>% ggplot(aes(x = age, fill = sex, group = sex)) + 
+  geom_dotplot(method = "histodot", stackdir = 'up', binpositions = 'all') + 
+  scale_y_continuous(NULL, breaks = NULL) +
+  xlab("age")
