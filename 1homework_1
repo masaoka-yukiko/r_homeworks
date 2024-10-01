@@ -1,0 +1,18 @@
+library(tidyverse)
+library(stringr)
+library(dplyr)
+library(ggrepel)
+
+data <- read_csv("https://raw.githubusercontent.com/vydra-v-getrax/intro_to_r/main/assignment1/UK_pubs.csv")
+
+dat <- count(data, pub_name,  sort = TRUE)
+dat$pub_characters <- str_count(dat$pub_name)
+
+
+dat %>% slice(1:40) %>% ggplot(aes(x = pub_characters, y = n))+
+  geom_point(show.legend = TRUE) + 
+  ggrepel::geom_text_repel(aes(label = pub_name))+
+  xlab("number of symbols") +
+  ylab("number of characters") +
+  ggtitle("40 most popular bars in UK") +
+  labs(caption = "Data from (link to webpage)")
