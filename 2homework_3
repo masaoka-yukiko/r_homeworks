@@ -1,0 +1,18 @@
+library("ggplot2")
+library("dplyr")
+library("tidyverse")
+library("ggpattern")
+
+eye_data <- read_csv("https://raw.githubusercontent.com/Whereamiactually/R/main/Couple%20Eye%20Colors.csv")
+
+eye_data = eye_data %>% filter(self_male != partner_female)
+eye_data = eye_data %>% group_by(self_male, partner_female) %>% summarise(count = n())
+
+eye_data <- mutate(eye_data, pairs = paste(substr(self_male, 1, 2), substr(partner_female, 1, 2), sep = '_'))
+
+eye_data %>%
+  ggplot(aes(x = pairs, y = count, fill = self_male, color = partner_female)) +
+  geom_bar_pattern(stat = "identity") + geom_col_pattern(aes(pattern_fill = partner_female), position = "stack", pattern = "stripe") +
+  scale_fill_manual(values = c("brown" = "brown", "blue" = "blue", "green" = "green" ))+
+  scale_pattern_fill_manual(values = c("brown" = "brown", "blue" = "blue", "green" = "green" ))+
+  labs(title = "Number of Couples with Different Eye Colors", x = "Eye Colors",y = "Number of Couples")
