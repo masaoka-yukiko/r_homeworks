@@ -1,0 +1,61 @@
+library("ggplot2")
+library("dplyr")
+library("tidyverse")
+library("latex2exp")
+
+
+mydata <- read_csv( "https://raw.githubusercontent.com/agricolamz/DS_for_DH/master/data/us_city_average_temperature.csv" )
+
+
+
+minimum <- mydata %>% select ('min_january', 'min_february', 'min_march','min_april', 'min_may', 'min_june', 'min_july', 'min_august', 'min_september', 'min_october', 'min_november', 'min_december') %>% min
+
+mydata$population <-lapply(mydata$population_2010,function(x) x/1000000)
+
+
+city_population <- mydata%>%
+  select('city', 'population')
+
+temps <- mydata %>%
+  select('min_january', 'min_february', 'min_march','min_april', 'min_may', 'min_june', 'min_july', 'min_august', 'min_september', 'min_october', 'min_november', 'min_december', 'max_january', 'max_february', 'max_march','max_april', 'max_may', 'max_june', 'max_july', 'max_august', 'max_september', 'max_october', 'max_november', 'max_december') 
+
+fc <- function(x){5/9 * (x - 32)}
+
+celc_deg <- as.data.frame(lapply(temps, fc)) 
+
+temp_min <- celc_deg %>% select('min_january', 'min_february', 'min_march','min_april', 'min_may', 'min_june', 'min_july', 'min_august', 'min_september', 'min_october', 'min_november', 'min_december') 
+
+temp_max <- celc_deg %>% select('max_january', 'max_february', 'max_march','max_april', 'max_may', 'max_june', 'max_july', 'max_august', 'max_september', 'max_october', 'max_november', 'max_december')
+
+
+months <- function(x){unlist(strsplit(x, split = "_", fixed = TRUE))[2]}
+
+
+for (name in names(temp_min)){months(name) -> names(temp_min)[names(temp_min) == name]}
+
+for (name in names(temp_max)){months(name) -> names(temp_max)[names(temp_max) == name]}
+
+
+temp_mins <- merge(city_population, temp_min)
+temp_mins$range <- 'min'
+
+temp_maxs <- merge(city_population, temp_max)
+temp_maxs$range <- 'max'
+
+# Long dataframe
+long_data <- rbind(temp_mins, temp_maxs)
+
+
+long_data = pivot_longer(long_data, cols = c('january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'), names_to =  "months", values_to = "temperature")
+long_data$months <- factor(long_data$months, levels = c('january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december')) 
+
+
+ggplot(long_data, aes(as.numeric(population),temperature, color = range)) +
+  geom_point() +
+  facet_wrap(~months) +
+  ggtitle(TeX("$^{0}C$\\ = \\frac{5}{9} \\times ($^{0}F$ - 32)"))+ 
+  labs(x = "population (mln persons)",
+       y = "temperature",
+       caption = "data from www.currentresults.com")+
+  theme(plot.title=element_text(hjust = 0.5)) +
+  theme_light()
