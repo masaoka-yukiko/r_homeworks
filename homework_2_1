@@ -1,0 +1,26 @@
+library("ggplot2")
+library("dplyr")
+library("tidyverse")
+library("stringr")
+
+
+datad <- read_tsv("https://raw.githubusercontent.com/agricolamz/DS_for_DH/master/data/freq_dict_2011.csv", col_names = TRUE)
+
+
+freq <- datad %>% unlist %>%  strsplit(split="")  %>%  unlist %>% `[`(!. %in% c("", " ", ".", ",", "'", "-", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10")) %>% tolower() %>% table  
+
+
+freqs = as.data.frame(freq)
+
+freqs$. <- as.vector(unlist(freqs$.))
+
+
+freqs %>%
+  ggplot(aes(as.numeric(Freq), .))+
+  geom_col()+
+  labs(x = "",
+       y = "",
+       title = "",
+       caption = "Данные из [Ляшевская, Шаров 2011]")
+
+
